@@ -61,7 +61,7 @@ const loadEvent = function () {
 
     if (event.target.id === 'sortByScore') { // this one need to be refactored, due to D.R.Y. !!!
       //console.log(clickCounter);
-      if (countingClicksOnSortButton() % 2 === 0) {
+      if (countingClicksOnSortButton() % 2 === 0) { // EVEN
         const beerClassElementHTMLColl = document.getElementsByClassName('beer'); // HTMLcollection
         const beerClassElement = [...beerClassElementHTMLColl]; // convert HTMLcoll. to array
         beerClassElement.map((element) => element.remove());
@@ -71,7 +71,7 @@ const loadEvent = function () {
         getRootElement()
           .insertAdjacentHTML('beforeend', sortingBeersCopy.map((beer) => beerComponent(beer)).join(''));
       }
-      if (countingClicksOnSortButton() % 2 === 1) {
+      if (countingClicksOnSortButton() % 2 === 1) { // ODD
         const beerClassElementHTMLColl = document.getElementsByClassName('beer'); // HTMLcollection
         const beerClassElement = [...beerClassElementHTMLColl]; // convert HTMLcoll. to array
         beerClassElement.map((element) => element.remove());

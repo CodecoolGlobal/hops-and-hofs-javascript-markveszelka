@@ -24,33 +24,15 @@ function getRootElement() {
   return document.getElementById('root');
 }
 
-function createSortButton() {
-  const sortButtonId = 'sortByScore';
-  const sortButtonText = 'Sort by score';
-  return getRootElement().insertAdjacentHTML('afterbegin', buttonComponent(sortButtonId, sortButtonText));
+function createButton(buttonId, buttonText) {
+  return getRootElement().insertAdjacentHTML('afterbegin', buttonComponent(buttonId, buttonText));
 }
 
 const loadEvent = function () {
-  // the HTML elements with ID are available as global variables with the ID (eg. root) but it is better if you
-  // const rootElement = document.getElementById('root');
-
-  //You can add the HTML code to the DOM like this
-  const loadButtonId = 'loadBeers';
-  const loadButtonText = 'Load the beers';
-  getRootElement().insertAdjacentHTML('afterbegin', buttonComponent(loadButtonId, loadButtonText));
-  const loadButtonElement = document.getElementById('loadBeers');
-
+  createButton('loadBeers', 'Load the beers');
   let clickCounter = 0;
 
   const clickEvent = (event) => {
-    if (event.target.id === 'loadBeers') {
-      console.dir(event.target); // button#loadBeers
-      console.dir(event.target.id); // loadBeers
-      getRootElement().insertAdjacentHTML('afterbegin', beers.map((beer) => beerComponent(beer)).join(''));
-      loadButtonElement.remove();
-      createSortButton();
-    }
-
     function countingClicksOnSortButton() {
       const sortButton = document.getElementById('sortByScore');
       sortButton.onclick = function() {
@@ -59,33 +41,58 @@ const loadEvent = function () {
       return clickCounter;
     }
 
-    if (event.target.id === 'sortByScore') { // this one need to be refactored, due to D.R.Y. !!!
-      //console.log(clickCounter);
+    function sortByAscendingOrDescending(sortingWay) {
+      const beerClassElementHTMLColl = document.getElementsByClassName('beer'); // HTMLcollection
+      const beerClassElement = [...beerClassElementHTMLColl]; // convert HTMLcoll. to array
+      beerClassElement.map((element) => element.remove());
+      const sortingBeersCopy = sortingWay;
+      return getRootElement()
+        .insertAdjacentHTML('beforeend', sortingBeersCopy.map((beer) => beerComponent(beer)).join(''));
+    }
+
+    if (event.target.id === 'loadBeers') {
+      const loadButtonElement = document.getElementById('loadBeers');
+      // console.dir(event.target); // button#loadBeers
+      // console.dir(event.target.id); // loadBeers
+      getRootElement().insertAdjacentHTML('afterbegin', beers.map((beer) => beerComponent(beer)).join(''));
+      loadButtonElement.remove();
+      createButton('sortByScore', 'Sort by score');
+      createButton('filterStrongIPAs', 'Strong IPAs');
+    }
+
+    if (event.target.id === 'sortByScore') {
       if (countingClicksOnSortButton() % 2 === 0) { // EVEN
-        const beerClassElementHTMLColl = document.getElementsByClassName('beer'); // HTMLcollection
-        const beerClassElement = [...beerClassElementHTMLColl]; // convert HTMLcoll. to array
-        beerClassElement.map((element) => element.remove());
-        const sortingBeersCopy = [...beers]
-          .sort((a, b) => a.score - b.score);
-        //console.log(sortingBeersCopy);
-        getRootElement()
-          .insertAdjacentHTML('beforeend', sortingBeersCopy.map((beer) => beerComponent(beer)).join(''));
+        sortByAscendingOrDescending([...beers].sort((a, b) => a.score - b.score));
       }
       if (countingClicksOnSortButton() % 2 === 1) { // ODD
-        const beerClassElementHTMLColl = document.getElementsByClassName('beer'); // HTMLcollection
-        const beerClassElement = [...beerClassElementHTMLColl]; // convert HTMLcoll. to array
-        beerClassElement.map((element) => element.remove());
-        const sortingBeersCopyReversed = [...beers]
-          .sort((a, b) => b.score - a.score);
-        //console.log(sortingBeersCopyReversed);
-        getRootElement()
-          .insertAdjacentHTML('beforeend', sortingBeersCopyReversed.map((beer) => beerComponent(beer)).join(''));
+        sortByAscendingOrDescending([...beers].sort((a, b) => b.score - a.score));
       }
+    }
+
+    if (event.target.id === 'filterStrongIPAs') {
+      const filterButtonElement = document.getElementById('filterStrongIPAs');
+      const beerClassElementHTMLColl = document.getElementsByClassName('beer'); // HTMLcollection
+      const beerClassElement = [...beerClassElementHTMLColl]; // convert HTMLcoll. to array
+      beerClassElement.map((element) => element.remove());
+      filterButtonElement.remove();
+      createButton('resetFilter', 'Reset filter');
+      //   const filteredBeerCopy =
+      sortByAscendingOrDescending([...beers].filter((beer) => beer.abv >= 6.5));
+      //   return getRootElement()
+      //     .insertAdjacentHTML('beforeend', filteredBeerCopy.map((beer) => beerComponent(beer)).join(''));
+    }
+
+    if (event.target.id === 'resetFilter') {
+      const resetButtonElement = document.getElementById('resetFilter');
+      const beerClassElementHTMLColl = document.getElementsByClassName('beer'); // HTMLcollection
+      const beerClassElement = [...beerClassElementHTMLColl]; // convert HTMLcoll. to array
+      beerClassElement.map((element) => element.remove());
+      resetButtonElement.remove();
+      createButton('filterStrongIPAs', 'Strong IPAs');
     }
   };
   window.addEventListener('click', clickEvent);
 };
 
-// you can run your code in different ways but this is the safest. This way you can make sure that all the content (including css, fonts) is loaded.
 window.addEventListener('load', loadEvent);
 

@@ -28,6 +28,28 @@ function createButton(buttonId, buttonText) {
   return getRootElement().insertAdjacentHTML('afterbegin', buttonComponent(buttonId, buttonText));
 }
 
+function removeSectionTagElement () {
+  const sectionTagElementHTMLColl = document.getElementsByTagName('section');
+  const sectionTagElement = [...sectionTagElementHTMLColl];
+  sectionTagElement.map((element) => element.remove());
+}
+
+function insertActualListToHTML(position, actualBeerList) {
+  return getRootElement().insertAdjacentHTML(position, `<section>${actualBeerList.map((beer) => beerComponent(beer)).join('')}</section>`);
+}
+
+function createDescendingSortList (beerList) {
+  return [...beerList].sort((a, b) => b.score - a.score);
+}
+
+function createAscendingSortList (beerList) {
+  return [...beerList].sort((a, b) => a.score - b.score);
+}
+
+function removeElement(elementName) {
+  return document.getElementById(elementName).remove();
+}
+
 const loadEvent = function () {
   createButton('loadBeers', 'Load the beers');
   let clickCounter = 0;
@@ -42,131 +64,70 @@ const loadEvent = function () {
       return clickCounter;
     }
 
-    // function sortByAscendingOrDescending(sortingWay) {
-    // const sectionTagElementHTMLColl = document.getElementsByTagName('section');
-    // const sectionTagElement = [...sectionTagElementHTMLColl]; // convert HTMLcoll. to array
-    // sectionTagElement.map((element) => element.remove());
-    //   const sortingBeersCopy = sortingWay;
-    //   return getRootElement()
-    //     .insertAdjacentHTML('beforeend', `<section>${sortingBeersCopy.map((beer) => beerComponent(beer)).join('')}</section>`);
-    // }
-
     if (event.target.id === 'loadBeers') {
-      const loadButtonElement = document.getElementById('loadBeers');
-      //   console.dir(event.target);
-      //   console.dir(event.target.id);
-      getRootElement().insertAdjacentHTML('afterbegin', `<section>${beers.map((beer) => beerComponent(beer)).join('')}</section>`);
-      loadButtonElement.remove();
+      removeElement('loadBeers');
       createButton('sortByScore', 'Sort by score');
       createButton('filterStrongIPAs', 'Strong IPAs');
       createButton('bestLightAle', 'Best Light Ale');
+      return insertActualListToHTML('afterend', beers);
     }
 
-    if (event.target.id === 'sortByScore') { // this one need to be refactored, due to D.R.Y. !!!
+    if (event.target.id === 'sortByScore') {
       isListSorted = true;
-      //console.log(clickCounter);
-      if (countingClicksOnSortButton() % 2 === 1) { // ODD
-        const sectionTagElementHTMLColl = document.getElementsByTagName('section');
-        const sectionTagElement = [...sectionTagElementHTMLColl]; // convert HTMLcoll. to array
-        sectionTagElement.map((element) => element.remove());
-        const sortingBeersCopy = [...beers]
-          .sort((a, b) => a.score - b.score);
-        //console.log(sortingBeersCopy);
-        getRootElement()
-          .insertAdjacentHTML('beforeend', `<section>${sortingBeersCopy.map((beer) => beerComponent(beer)).join('')}</section>`);
+      if (countingClicksOnSortButton() % 2 === 0) {
+        removeSectionTagElement();
+        return insertActualListToHTML('beforeend', createDescendingSortList(beers));
       }
-      if (countingClicksOnSortButton() % 2 === 0) { // EVEN
-        const sectionTagElementHTMLColl = document.getElementsByTagName('section');
-        const sectionTagElement = [...sectionTagElementHTMLColl]; // convert HTMLcoll. to array
-        sectionTagElement.map((element) => element.remove());
-        const sortingBeersCopyReversed = [...beers]
-          .sort((a, b) => b.score - a.score);
-        getRootElement()
-          .insertAdjacentHTML('beforeend', `<section>${sortingBeersCopyReversed.map((beer) => beerComponent(beer)).join('')}</section>`);
+      if (countingClicksOnSortButton() % 2 === 1) {
+        removeSectionTagElement();
+        return insertActualListToHTML('beforeend', createAscendingSortList(beers));
       }
     }
-    console.log(isListSorted);
-
-    // if (event.target.id === 'sortByScore') {
-    //   if (countingClicksOnSortButton() % 2 === 0) { // EVEN
-    //     sortByAscendingOrDescending([...beers].sort((a, b) => a.score - b.score));
-    //   }
-    //   if (countingClicksOnSortButton() % 2 === 1) { // ODD
-    //     sortByAscendingOrDescending([...beers].sort((a, b) => b.score - a.score));
-    //   }
-    // }
 
     if (event.target.id === 'filterStrongIPAs') {
-      const filterButtonElement = document.getElementById('filterStrongIPAs');
-      const sectionTagElementHTMLColl = document.getElementsByTagName('section');
-      const sectionTagElement = [...sectionTagElementHTMLColl]; // convert HTMLcoll. to array
-      sectionTagElement.map((element) => element.remove());
-      filterButtonElement.remove();
+      removeElement('filterStrongIPAs');
+      removeSectionTagElement();
       createButton('resetFilter', 'Reset filter');
       if (isListSorted === false) {
         const filteredBeerCopy = [...beers]
           .filter((beer) => beer.abv >= 6.5);
-        // sortByAscendingOrDescending([...beers].filter((beer) => beer.abv >= 6.5));
-        return getRootElement()
-          .insertAdjacentHTML('beforeend', `<section>${filteredBeerCopy.map((beer) => beerComponent(beer)).join('')}</section>`);
+        return insertActualListToHTML('beforeend', filteredBeerCopy);
       }
       if (isListSorted === true && countingClicksOnSortButton() % 2 === 0) {
-        const filteredBeerCopy = [...beers]
-          .filter((beer) => beer.abv >= 6.5)
-          .sort((a, b) => b.score - a.score);
-          // sortByAscendingOrDescending([...beers].filter((beer) => beer.abv >= 6.5));
-        return getRootElement()
-          .insertAdjacentHTML('beforeend', `<section>${filteredBeerCopy.map((beer) => beerComponent(beer)).join('')}</section>`);
+        return insertActualListToHTML('beforeend', createDescendingSortList(beers).filter((beer) => beer.abv >= 6.5));
       }
       if (isListSorted === true && countingClicksOnSortButton() % 2 === 1) {
-        const filteredBeerCopy = [...beers]
-          .filter((beer) => beer.abv >= 6.5)
-          .sort((a, b) => a.score - b.score);
-          // sortByAscendingOrDescending([...beers].filter((beer) => beer.abv >= 6.5));
-        return getRootElement()
-          .insertAdjacentHTML('beforeend', `<section>${filteredBeerCopy.map((beer) => beerComponent(beer)).join('')}</section>`);
+        return insertActualListToHTML('beforeend', createAscendingSortList(beers).filter((beer) => beer.abv >= 6.5));
       }
     }
 
     if (event.target.id === 'resetFilter') {
-      const resetButtonElement = document.getElementById('resetFilter');
-      const sectionTagElementHTMLColl = document.getElementsByTagName('section');
-      const sectionTagElement = [...sectionTagElementHTMLColl]; // convert HTMLcoll. to array
-      sectionTagElement.map((element) => element.remove());
-      resetButtonElement.remove();
+      removeElement('resetFilter');
+      removeSectionTagElement();
       createButton('filterStrongIPAs', 'Strong IPAs');
       if (isListSorted === false) {
-        getRootElement().insertAdjacentHTML('beforeend', `<section>${beers.map((beer) => beerComponent(beer)).join('')}</section>`);
+        return insertActualListToHTML('beforeend', beers);
       }
       if (isListSorted === true && countingClicksOnSortButton() % 2 === 0) {
-        const filteredBeerCopy = [...beers]
-          .sort((a, b) => b.score - a.score);
-        return getRootElement()
-          .insertAdjacentHTML('beforeend', `<section>${filteredBeerCopy.map((beer) => beerComponent(beer)).join('')}</section>`);
+        return insertActualListToHTML('beforeend', createDescendingSortList(beers));
       }
       if (isListSorted === true && countingClicksOnSortButton() % 2 === 1) {
-        const filteredBeerCopy = [...beers]
-          .sort((a, b) => a.score - b.score);
-        return getRootElement()
-          .insertAdjacentHTML('beforeend', `<section>${filteredBeerCopy.map((beer) => beerComponent(beer)).join('')}</section>`);
+        return insertActualListToHTML('beforeend', createAscendingSortList(beers));
       }
-
     }
     // 5. Only reduce, insertAdjacentHTML and the click event listener's clickHandler's callback are used for the task. NOT DONE!
     if (event.target.id === 'bestLightAle') {
-      const bestLightAleButtonElement = document.getElementById('bestLightAle');
-      bestLightAleButtonElement.remove();
+      removeElement('bestLightAle');
       const bestLightAle = [...beers]
         .filter((beer) => (beer.type.includes('Ale') && beer.abv <= 6)) // cannot use filter, only reduce...
         .reduce((a, c) => a.score > c.score ? a : c);
-      getRootElement()
+      return getRootElement()
         .insertAdjacentHTML('afterbegin', winnerComponent(bestLightAle));
     }
 
     if (event.target.id === 'closeWinner') {
-      const winnerBeerElement = document.getElementById('winner');
-      winnerBeerElement.remove();
-      createButton('bestLightAle', 'Best Light Ale');
+      removeElement('winner');
+      return createButton('bestLightAle', 'Best Light Ale');
     }
   };
   window.addEventListener('click', clickEvent);

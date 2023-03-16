@@ -122,11 +122,11 @@ function resetButtonContent() {
   if (getRootElement().getAttribute('sort') === 'none') {
     return insertActualListToHTML('beforeend', beers);
   }
-  if (getAscendingSortAttribute) {
+  if (getAscendingSortAttribute()) {
     setDescendingSortAttribute();
     return insertActualListToHTML('beforeend', createDescendingSortList(beers));
   }
-  if (getDescendingSortAttribute) {
+  if (getDescendingSortAttribute()) {
     setAscendingSortAttribute();
     return insertActualListToHTML('beforeend', createAscendingSortList(beers));
   }

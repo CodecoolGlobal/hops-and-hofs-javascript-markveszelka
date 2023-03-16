@@ -31,7 +31,7 @@ function createButton(buttonId, buttonText) {
 function removeSectionTagElement () {
   const sectionTagElementHTMLColl = document.getElementsByTagName('section');
   const sectionTagElement = [...sectionTagElementHTMLColl];
-  sectionTagElement.map((element) => element.remove());
+  sectionTagElement.forEach((element) => element.remove());
 }
 
 function insertActualListToHTML(position, actualBeerList) {
@@ -50,88 +50,119 @@ function removeElement(elementName) {
   return document.getElementById(elementName).remove();
 }
 
+function loadBeerButtonContent() {
+  removeElement('loadBeers');
+  createButton('sortByScore', 'Sort by score');
+  createButton('filterStrongIPAs', 'Strong IPAs');
+  createButton('bestLightAle', 'Best Light Ale');
+  return insertActualListToHTML('afterend', beers);
+}
+
+function bestLightAleButtonContent() {
+  removeElement('bestLightAle');
+  const bestLightAle = [...beers]
+    .reduce((accumulator, beer) =>
+      beer.type.includes('Ale') && beer.score > accumulator.score && beer.abv <= 6 ? beer : accumulator);
+  return getRootElement()
+    .insertAdjacentHTML('afterbegin', winnerComponent(bestLightAle));
+}
+
+function closeButtonContent() {
+  removeElement('winner');
+  return createButton('bestLightAle', 'Best Light Ale');
+}
+
+function getAscendingSortAttributeInHTML() {
+  return getRootElement().getAttribute('sort') === 'ascending';
+}
+
+function getDescendingSortAttributeInHTML() {
+  return getRootElement().getAttribute('sort') === 'descending';
+}
+
+function setAscendingSortAttributeInHTML() {
+  return getRootElement().setAttribute('sort', 'ascending');
+}
+
+function setDescendingSortAttributeInHTML() {
+  return getRootElement().setAttribute('sort', 'descending');
+}
+
+function sortByScoreButtonContent() {
+  if (getRootElement().getAttribute('sort') === 'none' || getAscendingSortAttributeInHTML()) {
+    setDescendingSortAttributeInHTML();
+    removeSectionTagElement();
+    return insertActualListToHTML('beforeend', createDescendingSortList(beers));
+  }
+  if (getDescendingSortAttributeInHTML()) {
+    setAscendingSortAttributeInHTML();
+    removeSectionTagElement();
+    return insertActualListToHTML('beforeend', createAscendingSortList(beers));
+  }
+}
+
+function filterStrongIPAsButtonContent() {
+  removeElement('filterStrongIPAs');
+  removeSectionTagElement();
+  createButton('resetFilter', 'Reset filter');
+  if (getRootElement().getAttribute('sort') === 'none') {
+    const filteredBeerCopy = [...beers]
+      .filter((beer) => beer.abv >= 6.5);
+    return insertActualListToHTML('beforeend', filteredBeerCopy);
+  }
+  if (getAscendingSortAttributeInHTML()) {
+    setDescendingSortAttributeInHTML();
+    return insertActualListToHTML('beforeend', createAscendingSortList(beers).filter((beer) => beer.abv >= 6.5));
+  }
+  if (getDescendingSortAttributeInHTML()) {
+    setAscendingSortAttributeInHTML();
+    return insertActualListToHTML('beforeend', createDescendingSortList(beers).filter((beer) => beer.abv >= 6.5));
+  }
+}
+
+function resetButtonContent() {
+  removeElement('resetFilter');
+  removeSectionTagElement();
+  createButton('filterStrongIPAs', 'Strong IPAs');
+  if (getRootElement().getAttribute('sort') === 'none') {
+    return insertActualListToHTML('beforeend', beers);
+  }
+  if (getAscendingSortAttributeInHTML) {
+    setDescendingSortAttributeInHTML();
+    return insertActualListToHTML('beforeend', createDescendingSortList(beers));
+  }
+  if (getDescendingSortAttributeInHTML) {
+    setAscendingSortAttributeInHTML();
+    return insertActualListToHTML('beforeend', createAscendingSortList(beers));
+  }
+}
+
+
 const loadEvent = function () {
   createButton('loadBeers', 'Load the beers');
-  let clickCounter = 0;
-  let isListSorted = false;
+  getRootElement().setAttribute('sort', 'none');
 
   const clickEvent = (event) => {
-    function countingClicksOnSortButton() {
-      const sortButton = document.getElementById('sortByScore');
-      sortButton.onclick = function() {
-        clickCounter++;
-      };
-      return clickCounter;
-    }
-
     if (event.target.id === 'loadBeers') {
-      removeElement('loadBeers');
-      createButton('sortByScore', 'Sort by score');
-      createButton('filterStrongIPAs', 'Strong IPAs');
-      createButton('bestLightAle', 'Best Light Ale');
-      return insertActualListToHTML('afterend', beers);
+      loadBeerButtonContent();
     }
-
     if (event.target.id === 'sortByScore') {
-      isListSorted = true;
-      if (countingClicksOnSortButton() % 2 === 0) {
-        removeSectionTagElement();
-        return insertActualListToHTML('beforeend', createDescendingSortList(beers));
-      }
-      if (countingClicksOnSortButton() % 2 === 1) {
-        removeSectionTagElement();
-        return insertActualListToHTML('beforeend', createAscendingSortList(beers));
-      }
+      sortByScoreButtonContent();
     }
-
     if (event.target.id === 'filterStrongIPAs') {
-      removeElement('filterStrongIPAs');
-      removeSectionTagElement();
-      createButton('resetFilter', 'Reset filter');
-      if (isListSorted === false) {
-        const filteredBeerCopy = [...beers]
-          .filter((beer) => beer.abv >= 6.5);
-        return insertActualListToHTML('beforeend', filteredBeerCopy);
-      }
-      if (isListSorted === true && countingClicksOnSortButton() % 2 === 0) {
-        return insertActualListToHTML('beforeend', createDescendingSortList(beers).filter((beer) => beer.abv >= 6.5));
-      }
-      if (isListSorted === true && countingClicksOnSortButton() % 2 === 1) {
-        return insertActualListToHTML('beforeend', createAscendingSortList(beers).filter((beer) => beer.abv >= 6.5));
-      }
+      filterStrongIPAsButtonContent();
     }
-
     if (event.target.id === 'resetFilter') {
-      removeElement('resetFilter');
-      removeSectionTagElement();
-      createButton('filterStrongIPAs', 'Strong IPAs');
-      if (isListSorted === false) {
-        return insertActualListToHTML('beforeend', beers);
-      }
-      if (isListSorted === true && countingClicksOnSortButton() % 2 === 0) {
-        return insertActualListToHTML('beforeend', createDescendingSortList(beers));
-      }
-      if (isListSorted === true && countingClicksOnSortButton() % 2 === 1) {
-        return insertActualListToHTML('beforeend', createAscendingSortList(beers));
-      }
+      resetButtonContent();
     }
-    // 5. Only reduce, insertAdjacentHTML and the click event listener's clickHandler's callback are used for the task. NOT DONE!
     if (event.target.id === 'bestLightAle') {
-      removeElement('bestLightAle');
-      const bestLightAle = [...beers]
-        .filter((beer) => (beer.type.includes('Ale') && beer.abv <= 6)) // cannot use filter, only reduce...
-        .reduce((a, c) => a.score > c.score ? a : c);
-      return getRootElement()
-        .insertAdjacentHTML('afterbegin', winnerComponent(bestLightAle));
+      bestLightAleButtonContent();
     }
-
     if (event.target.id === 'closeWinner') {
-      removeElement('winner');
-      return createButton('bestLightAle', 'Best Light Ale');
+      closeButtonContent();
     }
   };
   window.addEventListener('click', clickEvent);
 };
-
 window.addEventListener('load', loadEvent);
 

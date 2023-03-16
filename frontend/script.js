@@ -50,6 +50,22 @@ function removeElement(elementName) {
   return document.getElementById(elementName).remove();
 }
 
+function getAscendingSortAttribute() {
+  return getRootElement().getAttribute('sort') === 'ascending';
+}
+
+function getDescendingSortAttribute() {
+  return getRootElement().getAttribute('sort') === 'descending';
+}
+
+function setAscendingSortAttribute() {
+  return getRootElement().setAttribute('sort', 'ascending');
+}
+
+function setDescendingSortAttribute() {
+  return getRootElement().setAttribute('sort', 'descending');
+}
+
 function loadBeerButtonContent() {
   removeElement('loadBeers');
   createButton('sortByScore', 'Sort by score');
@@ -67,35 +83,14 @@ function bestLightAleButtonContent() {
     .insertAdjacentHTML('afterbegin', winnerComponent(bestLightAle));
 }
 
-function closeButtonContent() {
-  removeElement('winner');
-  return createButton('bestLightAle', 'Best Light Ale');
-}
-
-function getAscendingSortAttributeInHTML() {
-  return getRootElement().getAttribute('sort') === 'ascending';
-}
-
-function getDescendingSortAttributeInHTML() {
-  return getRootElement().getAttribute('sort') === 'descending';
-}
-
-function setAscendingSortAttributeInHTML() {
-  return getRootElement().setAttribute('sort', 'ascending');
-}
-
-function setDescendingSortAttributeInHTML() {
-  return getRootElement().setAttribute('sort', 'descending');
-}
-
 function sortByScoreButtonContent() {
-  if (getRootElement().getAttribute('sort') === 'none' || getAscendingSortAttributeInHTML()) {
-    setDescendingSortAttributeInHTML();
+  if (getRootElement().getAttribute('sort') === 'none' || getAscendingSortAttribute()) {
+    setDescendingSortAttribute();
     removeSectionTagElement();
     return insertActualListToHTML('beforeend', createDescendingSortList(beers));
   }
-  if (getDescendingSortAttributeInHTML()) {
-    setAscendingSortAttributeInHTML();
+  if (getDescendingSortAttribute()) {
+    setAscendingSortAttribute();
     removeSectionTagElement();
     return insertActualListToHTML('beforeend', createAscendingSortList(beers));
   }
@@ -110,12 +105,12 @@ function filterStrongIPAsButtonContent() {
       .filter((beer) => beer.abv >= 6.5);
     return insertActualListToHTML('beforeend', filteredBeerCopy);
   }
-  if (getAscendingSortAttributeInHTML()) {
-    setDescendingSortAttributeInHTML();
+  if (getAscendingSortAttribute()) {
+    setDescendingSortAttribute();
     return insertActualListToHTML('beforeend', createAscendingSortList(beers).filter((beer) => beer.abv >= 6.5));
   }
-  if (getDescendingSortAttributeInHTML()) {
-    setAscendingSortAttributeInHTML();
+  if (getDescendingSortAttribute()) {
+    setAscendingSortAttribute();
     return insertActualListToHTML('beforeend', createDescendingSortList(beers).filter((beer) => beer.abv >= 6.5));
   }
 }
@@ -127,40 +122,34 @@ function resetButtonContent() {
   if (getRootElement().getAttribute('sort') === 'none') {
     return insertActualListToHTML('beforeend', beers);
   }
-  if (getAscendingSortAttributeInHTML) {
-    setDescendingSortAttributeInHTML();
+  if (getAscendingSortAttribute) {
+    setDescendingSortAttribute();
     return insertActualListToHTML('beforeend', createDescendingSortList(beers));
   }
-  if (getDescendingSortAttributeInHTML) {
-    setAscendingSortAttributeInHTML();
+  if (getDescendingSortAttribute) {
+    setAscendingSortAttribute();
     return insertActualListToHTML('beforeend', createAscendingSortList(beers));
   }
 }
 
+function closeButtonContent() {
+  removeElement('winner');
+  return createButton('bestLightAle', 'Best Light Ale');
+}
 
 const loadEvent = function () {
   createButton('loadBeers', 'Load the beers');
   getRootElement().setAttribute('sort', 'none');
 
   const clickEvent = (event) => {
-    if (event.target.id === 'loadBeers') {
-      loadBeerButtonContent();
-    }
-    if (event.target.id === 'sortByScore') {
-      sortByScoreButtonContent();
-    }
-    if (event.target.id === 'filterStrongIPAs') {
-      filterStrongIPAsButtonContent();
-    }
-    if (event.target.id === 'resetFilter') {
-      resetButtonContent();
-    }
-    if (event.target.id === 'bestLightAle') {
-      bestLightAleButtonContent();
-    }
-    if (event.target.id === 'closeWinner') {
-      closeButtonContent();
-    }
+    const result = (event.target.id === 'loadBeers') ? loadBeerButtonContent()
+      : (event.target.id === 'sortByScore') ? sortByScoreButtonContent()
+        : (event.target.id === 'filterStrongIPAs') ? filterStrongIPAsButtonContent()
+          : (event.target.id === 'resetFilter') ? resetButtonContent()
+            : (event.target.id === 'bestLightAle') ? bestLightAleButtonContent()
+              : (event.target.id === 'closeWinner') ? closeButtonContent()
+                : event;
+    return result;
   };
   window.addEventListener('click', clickEvent);
 };

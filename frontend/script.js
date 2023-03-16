@@ -12,10 +12,10 @@ const beerComponent = ({brewery, name, type, score, abv}) => `
 	</div>
 `;
 
-const winnerComponent = (beer) => `
+const winnerComponent = ({brewery, name, type, score, abv}) => `
 	<div id="winner">
 		<h1>The best light Ale is</h1>
-		${beerComponent(beer)}
+		${beerComponent({brewery, name, type, score, abv})}
 		${buttonComponent('closeWinner', 'Close')}
 	</div>
 `;
@@ -35,7 +35,12 @@ function removeSectionTagElement () {
 }
 
 function insertActualListToHTML(position, actualBeerList) {
-  return getRootElement().insertAdjacentHTML(position, `<section>${actualBeerList.map((beer) => beerComponent(beer)).join('')}</section>`);
+  return getRootElement().insertAdjacentHTML(position,
+    `<section>
+    ${actualBeerList
+    .map(({brewery, name, type, score, abv}) =>
+      beerComponent({brewery, name, type, score, abv})).join('')}
+    </section>`);
 }
 
 function createDescendingSortList (beerList) {

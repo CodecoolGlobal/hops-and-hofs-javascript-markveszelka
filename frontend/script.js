@@ -74,15 +74,6 @@ function loadBeerButtonContent() {
   return insertActualListToHTML('afterend', beers);
 }
 
-function bestLightAleButtonContent() {
-  removeElement('bestLightAle');
-  const bestLightAle = [...beers]
-    .reduce((accumulator, beer) =>
-      beer.type.includes('Ale') && beer.score > accumulator.score && beer.abv <= 6 ? beer : accumulator);
-  return getRootElement()
-    .insertAdjacentHTML('afterbegin', winnerComponent(bestLightAle));
-}
-
 function sortByScoreButtonContent() {
   if (getRootElement().getAttribute('sort') === 'none' || getAscendingSortAttribute()) {
     setDescendingSortAttribute();
@@ -96,22 +87,24 @@ function sortByScoreButtonContent() {
   }
 }
 
-function filterStrongIPAsButtonContent() {
+function filterStrongIPAsButtonContent(limit) {
   removeElement('filterStrongIPAs');
   removeSectionTagElement();
   createButton('resetFilter', 'Reset filter');
   if (getRootElement().getAttribute('sort') === 'none') {
     const filteredBeerCopy = [...beers]
-      .filter((beer) => beer.abv >= 6.5);
+      .filter((beer) => beer.abv >= limit);
     return insertActualListToHTML('beforeend', filteredBeerCopy);
   }
   if (getAscendingSortAttribute()) {
     setDescendingSortAttribute();
-    return insertActualListToHTML('beforeend', createAscendingSortList(beers).filter((beer) => beer.abv >= 6.5));
+    return insertActualListToHTML('beforeend', createAscendingSortList(beers)
+      .filter((beer) => beer.abv >= limit));
   }
   if (getDescendingSortAttribute()) {
     setAscendingSortAttribute();
-    return insertActualListToHTML('beforeend', createDescendingSortList(beers).filter((beer) => beer.abv >= 6.5));
+    return insertActualListToHTML('beforeend', createDescendingSortList(beers)
+      .filter((beer) => beer.abv >= limit));
   }
 }
 
@@ -132,6 +125,15 @@ function resetButtonContent() {
   }
 }
 
+function bestLightAleButtonContent(limit) {
+  removeElement('bestLightAle');
+  const bestLightAle = [...beers]
+    .reduce((accumulator, beer) =>
+      beer.type.includes('Ale') && beer.score > accumulator.score && beer.abv <= limit ? beer : accumulator);
+  return getRootElement()
+    .insertAdjacentHTML('afterbegin', winnerComponent(bestLightAle));
+}
+
 function closeButtonContent() {
   removeElement('winner');
   return createButton('bestLightAle', 'Best Light Ale');
@@ -144,9 +146,9 @@ const loadEvent = function () {
   const clickEvent = (event) => {
     const result = (event.target.id === 'loadBeers') ? loadBeerButtonContent()
       : (event.target.id === 'sortByScore') ? sortByScoreButtonContent()
-        : (event.target.id === 'filterStrongIPAs') ? filterStrongIPAsButtonContent()
+        : (event.target.id === 'filterStrongIPAs') ? filterStrongIPAsButtonContent(6.5)
           : (event.target.id === 'resetFilter') ? resetButtonContent()
-            : (event.target.id === 'bestLightAle') ? bestLightAleButtonContent()
+            : (event.target.id === 'bestLightAle') ? bestLightAleButtonContent(6)
               : (event.target.id === 'closeWinner') ? closeButtonContent()
                 : event;
     return result;
